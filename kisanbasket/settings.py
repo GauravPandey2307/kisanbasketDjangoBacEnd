@@ -1,25 +1,21 @@
 import os
 from pathlib import Path
 
-# Create the log directory if it doesn't exist
-log_directory = 'logs'  # Choose the directory name
-os.makedirs(log_directory, exist_ok=True)
-
-# Django settings configurations continue below...
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_ROOT = BASE_DIR / 'static_root'
 
 STATIC_URL = '/static/'
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8500',  # Example: Your Flutter app's development server
+    'http://example.com',     # Add more origins as needed
+]
 
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['10.0.2.2', '127.0.0.1','.vercel.app']
-CSRF_COOKIE_SECURE = False
-CSRF_COOKIE_HTTPONLY = False
+ALLOWED_HOSTS = ['your-production-domain.com', 'www.your-production-domain.com']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -38,16 +34,11 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-]
-
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:8500',  # Example: Your Flutter app's development server
-    'http://example.com',     # Add more origins as needed
 ]
 
 ROOT_URLCONF = 'kisanbasket.urls'
@@ -95,9 +86,8 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
+USE_L10N = True
 USE_TZ = True
-
-STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -108,13 +98,21 @@ LOGGING = {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(log_directory, 'django.log'),  # Full path to the log file
-            'mode': 'a',  # Append mode
-            'encoding': 'utf-8',  # Specify encoding
+            'filename': '/var/log/django/django.log',  # Full path to the log file
+            'formatter': 'verbose',
         },
     },
-    'root': {
-        'handlers': ['file'],
-        'level': 'DEBUG',
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} {levelname} {name} {message}',
+            'style': '{',
+        },
     },
 }
